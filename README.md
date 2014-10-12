@@ -30,5 +30,5 @@ increases the y position, and resets the x position to the offset value.
 
 *NOTE:* Because of how the world and associated functions are implemented, only world widths divisible
 by eight are possible, and any seed file not conforming with this will have the width rounded up.
-This is especially imported when using NetPBM seeds, as any don't care bits at the end of a row
+This is especially important when using NetPBM seeds, as any pad bits at the end of a row
 are *not* scrubbed.
