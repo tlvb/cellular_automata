@@ -3,6 +3,8 @@ Simulate Conway's Game of Life and other automata
 that have two states and work in a Manhattan
 neighbourhood.
 
+The world is implemented as a torus.
+
 ## how to run the program
 ./cellular\_automata \[**-r ruleset**\] \[**-n N**\] \[**-o file** | **-O fmt**\] **seed\_file**  
 	**-r ruleset** is expected on the form surviveset/birthset  
@@ -28,3 +30,5 @@ increases the y position, and resets the x position to the offset value.
 
 *NOTE:* Because of how the world and associated functions are implemented, only world widths divisible
 by eight are possible, and any seed file not conforming with this will have the width rounded up.
+This is especially imported when using NetPBM seeds, as any don't care bits at the end of a row
+are *not* scrubbed.
