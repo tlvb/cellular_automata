@@ -98,8 +98,8 @@ int main(int argc, const char **argv) { /*{{{*/
 	} /*}}}*/
 	fprintf(stderr, "\ndone\n");
 
-	int g = 0;
 	if (turns > 0) {
+		int g = 0;
 		if (pbmnfmt == NULL) { /*{{{*/
 			clock_t start = clock();
 			for(int i=0; i<turns; ++i) {
@@ -125,15 +125,19 @@ int main(int argc, const char **argv) { /*{{{*/
 			clock_t stop = clock();
 			free(fn);
 		} /*}}}*/
+		if (pbmfile != NULL) {
+			write_pbm_world(pbmfile, wo, g);
+		}
 	}
 	else {
+#ifndef NOGUI
 		ret = gui_main(wo, rsl);
 		if (ret != 0) {
 			ret += 4;
 		}
-	}
-	if (pbmfile != NULL) {
-		write_pbm_world(pbmfile, wo, g);
+#else
+		fprintf(stderr, "this version is not compiled with gui support.\n");
+#endif
 	}
 cleanup_4:
 	free_ruleset_lut(rsl);

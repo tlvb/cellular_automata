@@ -53,6 +53,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		goto gui_exit_4;
 	} /*}}}*/
 	int g = 0;
+	int i = 0;
 	for (;;) {
 		SDL_Event e;
 		if (SDL_PollEvent(&e)) {
@@ -71,7 +72,9 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		update_first_pass(wo, rsl, g);
 		update_second_pass(wo, rsl, g);
 		g ^= 1;
+		i++;
 	}
+	printf("%d runs\n", i);
 	SDL_DestroyTexture(t);
 gui_exit_4:
 	SDL_FreeSurface(s);

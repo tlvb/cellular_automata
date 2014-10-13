@@ -5,6 +5,17 @@ neighbourhood.
 
 The world is implemented as a torus.
 
+## how to build the program
+On linux:
+
+    make
+
+...after making sure that you have everything necessary to build it, which should be
+general c compiling stuff and SDL 2 unless you want to build without gui support
+in which case compile as
+
+    make nogui
+
 ## how to run the program
 ./cellular\_automata \[**-r ruleset**\] \[**-n N** \[**-o file** | **-O fmt**\]\] **seed\_file**  
 	**-r ruleset** is expected on the form surviveset/birthset e.g. -r 23/3  
@@ -17,7 +28,10 @@ The world is implemented as a torus.
 	**-O** will write every frame to enumerated files (e.g. -O frame_%04d.pbm)  
 	   NOTE: -o/-O has no effect when the program runs in graphics mode.
 
-Currently only non-interactive mode is supported.
+### examples
+	mkdir out
+	./cellular_automata -n 32 -O out/pentomino_frame_%02d.pbm examples/r-pentomino
+    ./cellular_automata -r 23/3 examples/r-pentomino-large
 
 ## format of the seed file
 Currently two seed file formats are accepted:

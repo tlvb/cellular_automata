@@ -9,6 +9,9 @@ default: cellular_automata
 cellular_automata: main.c ca.o io.o gui.o
 	$(CC) $(CFLAGS) -o $@ $(filter-out %.h, $^) -lSDL2
 
+nogui: main.c ca.o io.o
+	$(CC) $(CFLAGS) -o cellular_automata -DNOGUI $(filter-out %.h, $^)
+
 sdl_gui.o: gui.c gui.h ca.h
 	$(CC) $(CFLAGS) -c $<
 io.o: io.c io.h ca.h
