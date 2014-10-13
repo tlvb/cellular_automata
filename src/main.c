@@ -1,5 +1,6 @@
 #include "ca.h"
 #include "io.h"
+#include "gui.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -39,13 +40,16 @@ int main(int argc, const char **argv) { /*{{{*/
 	if (argc == 0 || seedfn == NULL) { /*{{{*/
 		fprintf(
 			stderr,
-			"%s [-r ruleset] [-n N] [-o file | -O fmt] seed_file\n"
-			"\t-r ruleset is expected on the form surviveset/birthset\n"
-			"\t   e.g. -r 23/3 for Conway's Game of Life\n"
-			"\t-n is for benchmark/non-interactive mode, evolving the seed N times while measuring the time\n"
-			"\t   time is not reported when -O is active because that would be pointless\n"
+			"%s [-r ruleset] [-n N [-o file | -O fmt]] seed_file\n"
+			"\t-r ruleset is expected on the form surviveset/birthset, e.g. -r 23/3\n"
+			"\t   for Conway's Game of Life (which is what is selected if -r is omitted).\n"
+			"\t-n is for benchmark/non-interactive mode, evolving the seed N times while measuring the time.\n"
+			"\t   Time is not reported when -O is active because that would be pointless.\n"
+			"\t   NOTE: if -n is NOT set, graphics mode is selected, and the automaton runs until\n"
+			"\t   the window is closed.\n"
 			"\t-o will write the final frame to the assigned file in raw pbm format\n"
 			"\t-O will write every frame to enumerated files (e.g. -O frame_%%04d.pbm)\n"
+			"\t   NOTE: -o/-O has no effect when the program runs in graphics mode.\n"
 			"\nrequired parameter seed_file is missing\n",
 			argv[0]
 		);
@@ -123,9 +127,10 @@ int main(int argc, const char **argv) { /*{{{*/
 		} /*}}}*/
 	}
 	else {
-		fprintf(stderr, "Only non-interactive mode is implemented at this time, sorry.\n");
-		ret = 5;
-		goto cleanup_4;
+		ret = gui_main(wo, rsl);
+		if (ret != 0) {
+			ret += 4;
+		}
 	}
 	if (pbmfile != NULL) {
 		write_pbm_world(pbmfile, wo, g);
