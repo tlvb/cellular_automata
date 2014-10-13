@@ -5,22 +5,31 @@
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
 
+void populate_pixelstash(SDL_Surface *s, int pixelsize, int fillsize, int c0, int c1) { /*{{{*/
+	for (int y=0; y<256; ++y) {
+		for (int x=0; x<8; ++x) {
+			SDL_Rect r = { .x=x*pixelsize, .y=y*pixelsize, .w=fillsize, .h=fillsize };
+			if ((y&(1<<(7-x))) != 0) {
+				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, c1, c1, c1, 255));
+			}
+			else {
+				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, c0, c0, c0, 255));
+			}
+		}
+	}
+} /*}}}*/
 SDL_Surface *build_pixelstash(int pixelsize) { /*{{{*/
 	SDL_Surface *s = SDL_CreateRGBSurface(0, 8*pixelsize, 256*pixelsize, 32, 0, 0, 0, 0);
 	if (s == NULL) {
 		return NULL;
 	}
 	SDL_LockSurface(s);
-	for (int y=0; y<256; ++y) {
-		for (int x=0; x<8; ++x) {
-			SDL_Rect r = { .x=x*pixelsize, .y=y*pixelsize, .w=pixelsize, .h=pixelsize };
-			if ((y&(1<<(7-x))) != 0) {
-				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, 255, 255, 255, 255));
-			}
-			else {
-				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, 0, 0, 0, 255));
-			}
-		}
+	if (pixelsize >= 8) {
+		populate_pixelstash(s, pixelsize, pixelsize, 31, 127);
+		populate_pixelstash(s, pixelsize, pixelsize-1, 47, 191);
+	}
+	else {
+		populate_pixelstash(s, pixelsize, pixelsize, 47, 191);
 	}
 	SDL_UnlockSurface(s);
 	SDL_SaveBMP(s, "/tmp/test.bmp");
@@ -66,7 +75,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	bool done = false;
 	bool run = false;
 	bool drawing = false;
-	bool drawchange = false;
+	bool drawchange = true;
 	int delay = 128;
 	int dx=0, dy=0, ds=0;
 	Uint32 t0 = SDL_GetTicks();
@@ -81,12 +90,13 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) { /*{{{*/
 			switch (e.type) {
-				case SDL_WINDOWEVENT:
+				case SDL_WINDOWEVENT: /*{{{*/
 					if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
 						done = true;
 					}
 					break;
-				case SDL_KEYDOWN:
+				/*}}}*/
+				case SDL_KEYDOWN: /*{{{*/
 					switch (e.key.keysym.sym) {
 						case SDLK_ESCAPE:
 							done = true;
@@ -122,7 +132,8 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 							break;
 					}
 					break;
-				case SDL_MOUSEBUTTONDOWN:
+				/*}}}*/
+				case SDL_MOUSEBUTTONDOWN: /*{{{*/
 					switch (e.button.button) {
 						case SDL_BUTTON_LEFT:
 							drawing = true;
@@ -141,7 +152,8 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 							break;
 					}
 					break;
-				case SDL_MOUSEBUTTONUP:
+				/*}}}*/
+				case SDL_MOUSEBUTTONUP: /*{{{*/
 					drawing = false;
 					break;
 				case SDL_MOUSEMOTION:
@@ -150,9 +162,10 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 						drawchange = true;
 					}
 					break;
+				/*}}}*/
 			}
 		} /*}}}*/
-		if (run || drawchange || timesup) {
+		if ((run && timesup) || drawchange) { /*{{{*/
 			for (int x=0; x<wo->w; ++x) {
 				for (int y=0; y<wo->h; ++y) {
 					SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y)*pxsz, .w=8*pxsz, .h=pxsz };
@@ -161,13 +174,13 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 				}
 			}
 			SDL_RenderPresent(r);
-		}
-		if (run && timesup) {
+		} /*}}}*/
+		if (run && timesup) { /*{{{*/
 			SDL_Delay(delay);
 			update_world(wo, rsl, g);
 			g ^= 1;
 			i++;
-		}
+		} /*}}}*/
 		drawchange = false;
 		timesup = false;
 	}
