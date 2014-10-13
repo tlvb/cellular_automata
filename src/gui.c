@@ -3,6 +3,7 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_events.h>
+#include <stdbool.h>
 
 SDL_Surface *build_pixelstash(void) { /*{{{*/
 	SDL_Surface *s = SDL_CreateRGBSurface(0, 256, 256, 32, 0, 0, 0, 0);
@@ -53,13 +54,67 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		goto gui_exit_4;
 	} /*}}}*/
 	int g = 0;
-	int i = 0;
-	for (;;) {
+	long int i = 0;
+	bool done = false;
+	bool run = false;
+	bool drawing = false;
+	bool drawchange = false;
+	int dx=0, dy=0, ds=0;
+	while (!done) {
 		SDL_Event e;
 		if (SDL_PollEvent(&e)) {
-			if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE) {
-				break;
+			switch (e.type) {
+				case SDL_WINDOWEVENT:
+					if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
+						done = true;
+					}
+					break;
+				case SDL_KEYDOWN:
+					switch (e.key.keysym.sym) {
+						case SDLK_ESCAPE:
+							done = true;
+							break;
+						case SDLK_SPACE:
+							run = !run;
+							break;
+						default:
+							fprintf(stderr, "ESC quits the program, SPACE starts/stops time.\n");
+							break;
+					}
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					switch (e.button.button) {
+						case SDL_BUTTON_LEFT:
+							drawing = true;
+							dx = e.button.x;
+							dy = e.button.y;
+							ds = 1;
+							drawchange = true;
+							break;
+						case SDL_BUTTON_RIGHT:
+							drawing = true;
+							dx = e.button.x;
+							dy = e.button.y;
+							drawchange = true;
+							ds = 0;
+							break;
+						default:
+							fprintf(stderr, "LEFT button sets a cell to alive, RIGHT button sets a cell to dead.\n");
+							break;
+					}
+					break;
+				case SDL_MOUSEBUTTONUP:
+					drawing = false;
+					break;
+				case SDL_MOUSEMOTION:
+					dx = e.motion.x;
+					dy = e.motion.y;
+					drawchange = true;
+					break;
 			}
+		}
+		if (drawing && drawchange) {
+			world_set_cell(wo, g, dx, dy, ds);
 		}
 		for (int x=0; x<wo->w; ++x) {
 			for (int y=0; y<wo->h; ++y) {
@@ -68,13 +123,17 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 				SDL_RenderCopy(r, t, &srcr, &dstr);
 			}
 		}
-		SDL_RenderPresent(r);
-		update_first_pass(wo, rsl, g);
-		update_second_pass(wo, rsl, g);
-		g ^= 1;
-		i++;
+		if (run || drawchange) {
+			SDL_RenderPresent(r);
+		}
+		if (run) {
+			update_world(wo, rsl, g);
+			g ^= 1;
+			i++;
+		}
+		drawchange = false;
 	}
-	printf("%d runs\n", i);
+	printf("%ld runs\n", i);
 	SDL_DestroyTexture(t);
 gui_exit_4:
 	SDL_FreeSurface(s);

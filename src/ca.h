@@ -28,7 +28,7 @@ ruleset_lut_t *build_ruleset_lut(const ruleset_t *rs, void(*progress_reporter)(i
 void free_ruleset_lut(ruleset_lut_t *rsl);
 world_t *create_world(int w, int h);
 void free_world(world_t *wo);
-void update_first_pass(world_t *wo, const ruleset_lut_t *rsl, int generation);
-void update_second_pass(world_t *wo, const ruleset_lut_t *rsl, int generation);
+void update_world(world_t *t, const ruleset_lut_t *rsl, int generation);
+void world_set_cell(world_t *wo, int generation, int x, int y, int state);
 
 #endif

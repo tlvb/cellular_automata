@@ -187,3 +187,18 @@ void update_second_pass(world_t *wo, const ruleset_lut_t *rsl, int generation) {
 	world_data(wo, next_generation, wo->w-1, wo->h-1) |= (0x4&o)>>2;
 	world_data(wo, next_generation,       0, wo->h-1) |= (0x2&o)<<6;
 } /*}}}*/
+void update_world(world_t *wo, const ruleset_lut_t *rsl, int generation) { /*{{{*/
+	update_first_pass(wo, rsl, generation);
+	update_second_pass(wo, rsl, generation);
+} /*}}}*/
+void world_set_cell(world_t *wo, int generation, int x, int y, int state) { /*{{{*/
+	uint8_t current = world_data(wo, generation, x>>3, y);
+	uint8_t b = 1<<(7-(x&7));
+	if (state) {
+		current |= b;
+	}
+	else {
+		current &= ~b;
+	}
+	world_data(wo, generation, x>>3, y) = current;
+} /*}}}*/

@@ -17,7 +17,6 @@ int main(int argc, const char **argv) { /*{{{*/
 	int turns = 0;
 	const char *pbmfile = NULL;
 	const char *pbmnfmt = NULL;
-
 	// read arguments
 	for (int i=1; i<argc; ++i) { /*{{{*/
 		if (strcmp("-r", argv[i]) == 0) {
@@ -97,14 +96,13 @@ int main(int argc, const char **argv) { /*{{{*/
 		goto cleanup_4;
 	} /*}}}*/
 	fprintf(stderr, "\ndone\n");
-
-	if (turns > 0) {
+	// main loop
+	if (turns > 0) { /*{{{*/
 		int g = 0;
 		if (pbmnfmt == NULL) { /*{{{*/
 			clock_t start = clock();
 			for(int i=0; i<turns; ++i) {
-				update_first_pass(wo, rsl, g);
-				update_second_pass(wo, rsl, g);
+				update_world(wo, rsl, g);
 				g ^= 1;
 			}
 			clock_t stop = clock();
@@ -116,8 +114,7 @@ int main(int argc, const char **argv) { /*{{{*/
 			write_pbm_world(fn, wo, 0);
 			clock_t start = clock();
 			for(int i=0; i<turns; ++i) {
-				update_first_pass(wo, rsl, g);
-				update_second_pass(wo, rsl, g);
+				update_world(wo, rsl, g);
 				g ^= 1;
 				sprintf(fn, pbmnfmt, i);
 				write_pbm_world(fn, wo, g);
@@ -128,8 +125,8 @@ int main(int argc, const char **argv) { /*{{{*/
 		if (pbmfile != NULL) {
 			write_pbm_world(pbmfile, wo, g);
 		}
-	}
-	else {
+	} /*}}}*/
+	else { /*{{{*/
 #ifndef NOGUI
 		ret = gui_main(wo, rsl);
 		if (ret != 0) {
@@ -138,7 +135,7 @@ int main(int argc, const char **argv) { /*{{{*/
 #else
 		fprintf(stderr, "this version is not compiled with gui support.\n");
 #endif
-	}
+	} /*}}}*/
 cleanup_4:
 	free_ruleset_lut(rsl);
 cleanup_3:
