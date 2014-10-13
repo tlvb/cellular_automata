@@ -19,7 +19,7 @@ typedef struct {
 	uint8_t *d;
 } world_t;
 
-#define lut_data(LUT_, I_, J_, K_) ((LUT_)->lut[(I_)*0x010000 + (J_)*0x000100 + (K_)])
+#define lut_data(LUT_, I_, J_, K_) ((LUT_)->lut[((I_)<<16) + ((J_)<<8) + (K_)])
 #define world_data(WW_, GG_, XX_, YY_) ((WW_)->d[(GG_)*(WW_)->w*(WW_)->h + (YY_)*(WW_)->w + (XX_)])
 
 ruleset_t *build_ruleset(const char *s);
