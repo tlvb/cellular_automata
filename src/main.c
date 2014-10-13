@@ -15,7 +15,7 @@ void progrep(int p) {
 int main(int argc, const char **argv) { /*{{{*/
 	bool error = false;
 	int ret = 0;
-	bool emptyworld = true;
+	bool emptyworld = false;
 	const char *seedfn = NULL;
 	const char *rules = NULL;
 	int turns = 0;
