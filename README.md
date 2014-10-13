@@ -8,7 +8,7 @@ The world is implemented as a torus.
 ## how to run the program
 ./cellular\_automata \[**-r ruleset**\] \[**-n N** \[**-o file** | **-O fmt**\]\] **seed\_file**  
 	**-r ruleset** is expected on the form surviveset/birthset e.g. -r 23/3  
-	   -r 23/3 for Conway's Game of Life (which is what is selected if -r is omitted).  
+	   for Conway's Game of Life (which is what is selected if -r is omitted).  
 	**-n** is for benchmark/non-interactive mode, evolving the seed N times while measuring the time.  
 	   Time is not reported when -O is active because that would be pointless.  
 	   NOTE: if -n is NOT set, graphics mode is selected, and the automaton runs until  
