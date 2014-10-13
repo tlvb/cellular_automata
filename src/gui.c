@@ -67,10 +67,19 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	bool run = false;
 	bool drawing = false;
 	bool drawchange = false;
+	int delay = 128;
 	int dx=0, dy=0, ds=0;
+	Uint32 t0 = SDL_GetTicks();
+	bool timesup = true;
 	while (!done) {
+		Uint32 t1 = SDL_GetTicks();
+		if (t1 > t0) {
+			t0 = (t1-t0) + delay + SDL_GetTicks();
+			timesup = true;
+		}
+
 		SDL_Event e;
-		if (SDL_PollEvent(&e)) { /*{{{*/
+		while (SDL_PollEvent(&e)) { /*{{{*/
 			switch (e.type) {
 				case SDL_WINDOWEVENT:
 					if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
@@ -84,9 +93,32 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 							break;
 						case SDLK_SPACE:
 							run = !run;
+							drawchange = true;
+							break;
+						case SDLK_DOWN:
+							if (delay == 32) {
+								delay = 0;
+							}
+							else {
+								delay /= 2;
+							}
+							fprintf(stderr, "sleeping %dms between iterations\n", delay);
+							break;
+						case SDLK_UP:
+							if (delay == 0) {
+								delay = 32;
+							}
+							else {
+								delay *= 2;
+							}
+							fprintf(stderr, "sleeping %dms between iterations\n", delay);
 							break;
 						default:
-							fprintf(stderr, "ESC quits the program, SPACE starts/stops time.\n");
+							fprintf(
+								stderr,
+								"ESC quits the program, SPACE starts/stops time.\n"
+								"UP/DOWN changes delay between iterations\n"
+							);
 							break;
 					}
 					break;
@@ -94,17 +126,15 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 					switch (e.button.button) {
 						case SDL_BUTTON_LEFT:
 							drawing = true;
-							dx = e.button.x;
-							dy = e.button.y;
 							ds = 1;
 							drawchange = true;
+							world_set_cell(wo, g, e.button.x/pxsz, e.button.y/pxsz, ds);
 							break;
 						case SDL_BUTTON_RIGHT:
 							drawing = true;
-							dx = e.button.x;
-							dy = e.button.y;
 							drawchange = true;
 							ds = 0;
+							world_set_cell(wo, g, e.button.x/pxsz, e.button.y/pxsz, ds);
 							break;
 						default:
 							fprintf(stderr, "LEFT button sets a cell to alive, RIGHT button sets a cell to dead.\n");
@@ -115,16 +145,14 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 					drawing = false;
 					break;
 				case SDL_MOUSEMOTION:
-					dx = e.motion.x;
-					dy = e.motion.y;
-					drawchange = true;
+					if (drawing) {
+						world_set_cell(wo, g, e.motion.x/pxsz, e.motion.y/pxsz, ds);
+						drawchange = true;
+					}
 					break;
 			}
 		} /*}}}*/
-		if (drawing && drawchange) {
-			world_set_cell(wo, g, dx/pxsz, dy/pxsz, ds);
-		}
-		if (run || drawchange) {
+		if (run || drawchange || timesup) {
 			for (int x=0; x<wo->w; ++x) {
 				for (int y=0; y<wo->h; ++y) {
 					SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y)*pxsz, .w=8*pxsz, .h=pxsz };
@@ -134,12 +162,14 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 			}
 			SDL_RenderPresent(r);
 		}
-		if (run) {
+		if (run && timesup) {
+			SDL_Delay(delay);
 			update_world(wo, rsl, g);
 			g ^= 1;
 			i++;
 		}
 		drawchange = false;
+		timesup = false;
 	}
 	printf("%ld runs\n", i);
 	SDL_DestroyTexture(t);
