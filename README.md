@@ -25,6 +25,7 @@ and then the data. the offset values are for if you want to e.g. make a big worl
 seed kernel in the middle and not have to draw all the empty space around it. The data is one character
 per cell, '#' denotes a live cell, anything else is a dead cell, except for newlines ('\n'), which
 increases the y position, and resets the x position to the offset value.
+*Some seed files in this format are available in the examples/ directory.*
 
 * NetPBM raw bitmap (P4)
 
