@@ -1,4 +1,6 @@
 *.o
 *.pbm
+*.png
+*.sh
 cellular_automata
 out/

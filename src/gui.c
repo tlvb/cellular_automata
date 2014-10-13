@@ -5,15 +5,15 @@
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
 
-SDL_Surface *build_pixelstash(void) { /*{{{*/
-	SDL_Surface *s = SDL_CreateRGBSurface(0, 256, 256, 32, 0, 0, 0, 0);
+SDL_Surface *build_pixelstash(int pixelsize) { /*{{{*/
+	SDL_Surface *s = SDL_CreateRGBSurface(0, 8*pixelsize, 256*pixelsize, 32, 0, 0, 0, 0);
 	if (s == NULL) {
 		return NULL;
 	}
 	SDL_LockSurface(s);
 	for (int y=0; y<256; ++y) {
 		for (int x=0; x<8; ++x) {
-			SDL_Rect r = { .x=x, .y=y, .w=1, .h=1 };
+			SDL_Rect r = { .x=x*pixelsize, .y=y*pixelsize, .w=pixelsize, .h=pixelsize };
 			if ((y&(1<<(7-x))) != 0) {
 				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, 255, 255, 255, 255));
 			}
@@ -23,15 +23,23 @@ SDL_Surface *build_pixelstash(void) { /*{{{*/
 		}
 	}
 	SDL_UnlockSurface(s);
+	SDL_SaveBMP(s, "/tmp/test.bmp");
 	return s;
 } /*}}}*/
 int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	int ret = 0;
 	SDL_VideoInit(NULL);
+	SDL_DisplayMode dm;
+	if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
+		goto gui_exit_1;
+	}
+	int pxsz;
+	for (pxsz=1; (pxsz+1)*wo->w*8+64 < dm.w && (pxsz+1)*wo->h+64 < dm.h; ++pxsz);
+	printf("%d\n", pxsz);
 	SDL_Window *win = SDL_CreateWindow(
 		"cellular_automaton",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		wo->w*8, wo->h,
+		wo->w*8*pxsz, wo->h*pxsz,
 		0
 	);
 	if (win == NULL) { /*{{{*/
@@ -43,7 +51,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		ret = 2;
 		goto gui_exit_2;
 	} /*}}}*/
-	SDL_Surface *s = build_pixelstash();
+	SDL_Surface *s = build_pixelstash(pxsz);
 	if (s == NULL) { /*{{{*/
 		ret = 3;
 		goto gui_exit_3;
@@ -62,7 +70,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	int dx=0, dy=0, ds=0;
 	while (!done) {
 		SDL_Event e;
-		if (SDL_PollEvent(&e)) {
+		if (SDL_PollEvent(&e)) { /*{{{*/
 			switch (e.type) {
 				case SDL_WINDOWEVENT:
 					if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
@@ -112,18 +120,18 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 					drawchange = true;
 					break;
 			}
-		}
+		} /*}}}*/
 		if (drawing && drawchange) {
-			world_set_cell(wo, g, dx, dy, ds);
-		}
-		for (int x=0; x<wo->w; ++x) {
-			for (int y=0; y<wo->h; ++y) {
-				SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y), .w=8, .h=1 };
-				SDL_Rect dstr = { .x=x*8, .y=y, .w=8, .h=1 };
-				SDL_RenderCopy(r, t, &srcr, &dstr);
-			}
+			world_set_cell(wo, g, dx/pxsz, dy/pxsz, ds);
 		}
 		if (run || drawchange) {
+			for (int x=0; x<wo->w; ++x) {
+				for (int y=0; y<wo->h; ++y) {
+					SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y)*pxsz, .w=8*pxsz, .h=pxsz };
+					SDL_Rect dstr = { .x=x*8*pxsz, .y=y*pxsz, .w=8*pxsz, .h=1*pxsz };
+					SDL_RenderCopy(r, t, &srcr, &dstr);
+				}
+			}
 			SDL_RenderPresent(r);
 		}
 		if (run) {
