@@ -30,14 +30,14 @@ in which case compile as
 
 ### examples
 	mkdir out
-	./cellular_automata -n 32 -O out/pentomino_frame_%02d.pbm examples/r-pentomino
+    ./cellular_automata -n 32 -O out/pentomino_frame_%02d.pbm examples/r-pentomino
     ./cellular_automata -r 23/3 examples/r-pentomino-large
 
 ## format of the seed file
 Currently two seed file formats are accepted:
 
 * A simple text file.  
-should begin with "txt", followed by width, height, x-offset, y-offset separated by whitespace,
+The file should begin with "txt", followed by width, height, x-offset and y-offset, all separated by whitespace,
 and then the data. the offset values are for if you want to e.g. make a big world and place a small
 seed kernel in the middle and not have to draw all the empty space around it. The data is one character
 per cell, '#' denotes a live cell, anything else is a dead cell, except for newlines ('\n'), which
