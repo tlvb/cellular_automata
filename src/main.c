@@ -1,57 +1,76 @@
 #include "ca.h"
 #include "io.h"
 #include "gui.h"
+#include "help.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdbool.h>
 
 
 void progrep(int p) {
 	fprintf(stderr, "%x", p>>4);
 }
 int main(int argc, const char **argv) { /*{{{*/
+	bool error = false;
 	int ret = 0;
+	bool emptyworld = true;
 	const char *seedfn = NULL;
 	const char *rules = NULL;
 	int turns = 0;
 	const char *pbmfile = NULL;
 	const char *pbmnfmt = NULL;
+	int width = 0;
+	int height = 0;
 	// read arguments
 	for (int i=1; i<argc; ++i) { /*{{{*/
 		if (strcmp("-r", argv[i]) == 0) {
+			if (i == argc-1) { /*{{{*/
+				error = true;
+				break;
+			} /*}}}*/
 			rules = argv[++i];
 		}
 		else if (strcmp("-n", argv[i]) == 0) {
+			if (i == argc-1) { /*{{{*/
+				error = true;
+				break;
+			} /*}}}*/
 			turns = atoi(argv[++i]);
 		}
 		else if (strcmp("-o", argv[i]) == 0) {
+			if (i == argc-1) { /*{{{*/
+				error = true;
+				break;
+			} /*}}}*/
 			pbmfile = argv[++i];
 		}
 		else if (strcmp("-O", argv[i]) == 0) {
+			if (i == argc-1) { /*{{{*/
+				error = true;
+				break;
+			} /*}}}*/
 			pbmnfmt = argv[++i];
+		}
+		else if (strcmp("-w", argv[i]) == 0) {
+			if (i == argc-2) { /*{{{*/
+				error = true;
+				break;
+			} /*}}}*/
+			width = atoi(argv[++i]);
+			height = atoi(argv[++i]);
+			emptyworld = true;
 		}
 		else {
 			seedfn = argv[i];
+			emptyworld = false;
 		}
 	} /*}}}*/
 	// check that a seed file is given
-	if (argc == 0 || seedfn == NULL) { /*{{{*/
-		fprintf(
-			stderr,
-			"%s [-r ruleset] [-n N [-o file | -O fmt]] seed_file\n"
-			"\t-r ruleset is expected on the form surviveset/birthset, e.g. -r 23/3\n"
-			"\t   for Conway's Game of Life (which is what is selected if -r is omitted).\n"
-			"\t-n is for benchmark/non-interactive mode, evolving the seed N times while measuring the time.\n"
-			"\t   Time is not reported when -O is active because that would be pointless.\n"
-			"\t   NOTE: if -n is NOT set, graphics mode is selected, and the automaton runs until\n"
-			"\t   the window is closed.\n"
-			"\t-o will write the final frame to the assigned file in raw pbm format\n"
-			"\t-O will write every frame to enumerated files (e.g. -O frame_%%04d.pbm)\n"
-			"\t   NOTE: -o/-O has no effect when the program runs in graphics mode.\n"
-			"\nrequired parameter seed_file is missing\n",
-			argv[0]
-		);
+	if (error || argc == 0 || (seedfn == NULL && !emptyworld)) { /*{{{*/
+		fprintf(stderr, "\n\n" HELPSECTION "\n\n");
+		fprintf(stderr, "Exiting due to malformed or missing required commands.\n\n");
 		ret = 1;
 		goto cleanup_1;
 	} /*}}}*/
@@ -78,11 +97,20 @@ int main(int argc, const char **argv) { /*{{{*/
 	fprintf(stderr, "done\n");
 	pp_ruleset(rs);
 	// create and populate world
-	fprintf(stderr, "loading seed file\n");
-	world_t *wo = load_seed(seedfn);
+	world_t *wo = NULL;
+	if (emptyworld) {
+		wo = create_world((width+7)/8, height);
+	}
+	else {
+		fprintf(stderr, "loading seed file\n");
+		wo = load_seed(seedfn);
+	}
 	// see that it is good
 	if (wo == NULL) { /*{{{*/
-		fprintf(stderr, "could not populate world with seed from \"%s\"\n", seedfn);
+		fprintf(stderr, "could not create world\n");
+		if (!emptyworld) {
+			fprintf(stderr, "could not populate world with seed from \"%s\"\n", seedfn);
+		}
 		ret = 3;
 		goto cleanup_3;
 	} /*}}}*/

@@ -6,7 +6,7 @@ vpath %.h src/
 .PHONY: default
 default: cellular_automata
 
-cellular_automata: main.c ca.o io.o gui.o
+cellular_automata: main.c ca.o io.o gui.o help.h
 	$(CC) $(CFLAGS) -o $@ $(filter-out %.h, $^) -lSDL2
 
 nogui: main.c ca.o io.o
