@@ -1,8 +1,10 @@
 #include "ca.h"
+#include "io.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+
 
 void progrep(int p) {
 	fprintf(stderr, "%x", p>>4);
