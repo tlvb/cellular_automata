@@ -36,6 +36,8 @@ SDL_Surface *build_pixelstash(int pixelsize) { /*{{{*/
 	return s;
 } /*}}}*/
 int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
+	// INIT
+	/*{{{*/
 	int ret = 0;
 	SDL_VideoInit(NULL);
 	SDL_DisplayMode dm;
@@ -44,7 +46,6 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	}
 	int pxsz;
 	for (pxsz=1; (pxsz+1)*wo->w*8+64 < dm.w && (pxsz+1)*wo->h+64 < dm.h; ++pxsz);
-	printf("%d\n", pxsz);
 	SDL_Window *win = SDL_CreateWindow(
 		"cellular_automaton",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -75,24 +76,28 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	bool done = false;
 	bool run = false;
 	bool drawing = false;
-	bool drawchange = true;
+	bool needsredraw = true;
 	int delay = 128;
 	int dx=0, dy=0, ds=0;
 	Uint32 t0 = SDL_GetTicks();
 	bool timesup = true;
+	/*}}}*/
+	// MAIN LOOP
 	while (!done) {
 		Uint32 t1 = SDL_GetTicks();
-		if (t1 > t0) {
-			t0 = (t1-t0) + delay + SDL_GetTicks();
+		if (t1 > t0 + delay) {
+			t0 = SDL_GetTicks();
 			timesup = true;
 		}
-
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) { /*{{{*/
 			switch (e.type) {
 				case SDL_WINDOWEVENT: /*{{{*/
 					if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
 						done = true;
+					}
+					else {
+						needsredraw = true;
 					}
 					break;
 				/*}}}*/
@@ -103,7 +108,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 							break;
 						case SDLK_SPACE:
 							run = !run;
-							drawchange = true;
+							needsredraw = true;
 							break;
 						case SDLK_DOWN:
 							if (delay == 32) {
@@ -138,12 +143,12 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 						case SDL_BUTTON_LEFT:
 							drawing = true;
 							ds = 1;
-							drawchange = true;
+							needsredraw = true;
 							world_set_cell(wo, g, e.button.x/pxsz, e.button.y/pxsz, ds);
 							break;
 						case SDL_BUTTON_RIGHT:
 							drawing = true;
-							drawchange = true;
+							needsredraw = true;
 							ds = 0;
 							world_set_cell(wo, g, e.button.x/pxsz, e.button.y/pxsz, ds);
 							break;
@@ -159,13 +164,13 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 				case SDL_MOUSEMOTION:
 					if (drawing) {
 						world_set_cell(wo, g, e.motion.x/pxsz, e.motion.y/pxsz, ds);
-						drawchange = true;
+						needsredraw = true;
 					}
 					break;
 				/*}}}*/
 			}
 		} /*}}}*/
-		if ((run && timesup) || drawchange) { /*{{{*/
+		if ((run && timesup) || needsredraw) { /*{{{*/
 			for (int x=0; x<wo->w; ++x) {
 				for (int y=0; y<wo->h; ++y) {
 					SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y)*pxsz, .w=8*pxsz, .h=pxsz };
@@ -176,14 +181,14 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 			SDL_RenderPresent(r);
 		} /*}}}*/
 		if (run && timesup) { /*{{{*/
-			SDL_Delay(delay);
 			update_world(wo, rsl, g);
 			g ^= 1;
 			i++;
 		} /*}}}*/
-		drawchange = false;
+		needsredraw = false;
 		timesup = false;
 	}
+	// DONE
 	printf("%ld runs\n", i);
 	SDL_DestroyTexture(t);
 gui_exit_4:
