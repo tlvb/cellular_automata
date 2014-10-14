@@ -2,8 +2,6 @@
 A program to simulate Conway's Game of Life and other cellular automata that
 thrive on a torus and use a Moore neighborhood.
 
-The world is implemented as a torus.
-
 ## how to build the program
 On linux:
 
@@ -17,7 +15,7 @@ in which case compile as
 
 ## how to run the program
 
-<!-- params begin -->
+<!-- autogen begin -->
 COMMAND LINE PARAMETERS
 
     cellular_automata [-r ruleset] [-n N [-o file | -O format]] {-w W H | seed_file}
@@ -55,10 +53,13 @@ INTERACTIVE MODE
     running state. It is also possible to increase or decrease the delay between iterations with the
     up and down arrow keys respectiveley. The program exits when either escape is pressed, or the window
     is closed. Left clicking on a cell with the mouse will bring it alive, and right clicking will kill it.
-<!-- params end -->
+<!-- autogen end -->
 
 ## examples
-	mkdir out
+
+There are some example seeds in the example directory.
+
+    mkdir out
     ./cellular_automata -n 32 -O out/pentomino_frame_%02d.pbm examples/r-pentomino
     ./cellular_automata -r 23/3 examples/r-pentomino-large
-	./cellular_automata -w 100 100
+    ./cellular_automata -w 100 100
