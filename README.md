@@ -18,7 +18,9 @@ in which case compile as
 <!-- autogen begin -->
 COMMAND LINE PARAMETERS
 
-    cellular_automata [-r ruleset] [-n N [-o file | -O format]] {-w W H | seed_file}
+    cellular_automata [-h] [-r ruleset] [-n N [-o file | -O format]] [-w W H | seed_file]
+
+    -h         - Print this help text and exit.
 
     -r ruleset - Automaton ruleset on the form surviveset/birthset, e.g. 23/3 for
                  Conway's Game of Life (which is assumed if the parameter is omitted).
@@ -38,6 +40,9 @@ COMMAND LINE PARAMETERS
     seed_file  - Load a world from a seed file, either in raw NetPBM (P4) format, or from a plain
                  text file with the format described below.
 
+                 If neither a -w parameter nor a seed file has been specified, an empty world of 100x100 cells
+                 is created.
+
 PLAIN TEXT SEED FILE FORMAT
 
     The file should begin with "txt" followed by (white space separated) width, height,
@@ -51,8 +56,6 @@ INTERACTIVE MODE
 
     The Interactive mode starts in a paused state. Pressing the space bar toggles between paused and
     running state. It is also possible to increase or decrease the delay between iterations with the
-    up and down arrow keys respectiveley. The program exits when either escape is pressed, or the window
-    is closed. Left clicking on a cell with the mouse will bring it alive, and right clicking will kill it.
 <!-- autogen end -->
 
 ## examples
