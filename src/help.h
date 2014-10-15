@@ -4,7 +4,9 @@
 #define HELPSECTION \
 	"\x1b[1;4mCOMMAND LINE PARAMETERS\x1b[0m\n" \
 	"\n" \
-	"    cellular_automata [\x1b[1m-r\x1b[0m \x1b[4mruleset\x1b[0m] [\x1b[1m-n\x1b[0m \x1b[4mN\x1b[0m [\x1b[1m-o\x1b[0m \x1b[4mfile\x1b[0m | \x1b[1m-O\x1b[0m \x1b[4mformat\x1b[0m]] {\x1b[1m-w\x1b[0m \x1b[4mW\x1b[0m \x1b[4mH\x1b[0m | \x1b[4mseed_file\x1b[0m}\n" \
+	"    cellular_automata [\x1b[1m-h\x1b[0m] [\x1b[1m-r\x1b[0m \x1b[4mruleset\x1b[0m] [\x1b[1m-n\x1b[0m \x1b[4mN\x1b[0m [\x1b[1m-o\x1b[0m \x1b[4mfile\x1b[0m | \x1b[1m-O\x1b[0m \x1b[4mformat\x1b[0m]] [\x1b[1m-w\x1b[0m \x1b[4mW\x1b[0m \x1b[4mH\x1b[0m | \x1b[4mseed_file\x1b[0m]\n" \
+	"\n" \
+	"    \x1b[1m-h\x1b[0m         - Print this help text and exit.\n" \
 	"\n" \
 	"    \x1b[1m-r\x1b[0m \x1b[4mruleset\x1b[0m - Automaton ruleset on the form surviveset/birthset, e.g. 23/3 for\n" \
 	"                 Conway's Game of Life (which is assumed if the parameter is omitted).\n" \
@@ -23,6 +25,9 @@
 	"\n" \
 	"    \x1b[4mseed_file\x1b[0m  - Load a world from a seed file, either in raw NetPBM (P4) format, or from a plain\n" \
 	"                 text file with the format described below.\n" \
+	"\n" \
+	"                 If neither a -w parameter nor a seed file has been specified, an empty world of 100x100 cells\n"\
+	"                 is created.\n" \
 	"\n" \
 	"\x1b[1;4mPLAIN TEXT SEED FILE FORMAT\x1b[0m\n" \
 	"\n" \

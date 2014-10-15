@@ -24,7 +24,7 @@ SDL_Surface *build_pixelstash(int pixelsize) { /*{{{*/
 		return NULL;
 	}
 	SDL_LockSurface(s);
-	if (pixelsize >= 8) {
+	if (pixelsize >= 4) {
 		populate_pixelstash(s, pixelsize, pixelsize, 31, 127);
 		populate_pixelstash(s, pixelsize, pixelsize-1, 47, 191);
 	}

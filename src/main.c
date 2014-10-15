@@ -14,8 +14,9 @@ void progrep(int p) {
 }
 int main(int argc, const char **argv) { /*{{{*/
 	bool error = false;
+	bool helponly = false;
 	int ret = 0;
-	bool emptyworld = false;
+	bool emptyworld = true;
 	const char *seedfn = NULL;
 	const char *rules = NULL;
 	int turns = 0;
@@ -62,17 +63,24 @@ int main(int argc, const char **argv) { /*{{{*/
 			height = atoi(argv[++i]);
 			emptyworld = true;
 		}
+		else if (strcmp("-h", argv[i]) == 0) {
+			helponly = true;
+		}
 		else {
 			seedfn = argv[i];
 			emptyworld = false;
 		}
 	} /*}}}*/
 	// check that a seed file is given
-	if (error || argc == 0 || (seedfn == NULL && !emptyworld)) { /*{{{*/
+	if (error || argc == 1 || helponly ) { /*{{{*/
 		fprintf(stderr, "\n\n" HELPSECTION "\n\n");
-		fprintf(stderr, "Exiting due to malformed or missing required commands.\n\n");
-		ret = 1;
-		goto cleanup_1;
+		if (error) {
+			fprintf(stderr, "Exiting due to malformed or missing required commands.\n\n");
+			ret = 1;
+		}
+		if (error || helponly) {
+			goto cleanup_1;
+		}
 	} /*}}}*/
 	ruleset_t *rs = NULL;
 	// revert to conway's ruleset if none given
@@ -99,6 +107,10 @@ int main(int argc, const char **argv) { /*{{{*/
 	// create and populate world
 	world_t *wo = NULL;
 	if (emptyworld) {
+		if (width <= 0 || height <= 0) {
+			height = 100;
+			width = 100;
+		}
 		wo = create_world((width+7)/8, height);
 	}
 	else {
