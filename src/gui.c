@@ -8,7 +8,7 @@
 void populate_pixelstash(SDL_Surface *s, int pixelsize, int fillsize, int c0, int c1) { /*{{{*/
 	for (int y=0; y<256; ++y) {
 		for (int x=0; x<8; ++x) {
-			SDL_Rect r = { .x=x*pixelsize, .y=y*pixelsize, .w=fillsize, .h=fillsize };
+			SDL_Rect r = { .x=(x+((y&0xe0)>>2))*pixelsize, .y=(y&0x1f)*pixelsize, .w=fillsize, .h=fillsize };
 			if ((y&(1<<(7-x))) != 0) {
 				SDL_FillRect(s, &r, SDL_MapRGBA(s->format, c1, c1, c1, 255));
 			}
@@ -19,7 +19,7 @@ void populate_pixelstash(SDL_Surface *s, int pixelsize, int fillsize, int c0, in
 	}
 } /*}}}*/
 SDL_Surface *build_pixelstash(int pixelsize) { /*{{{*/
-	SDL_Surface *s = SDL_CreateRGBSurface(0, 8*pixelsize, 256*pixelsize, 32, 0, 0, 0, 0);
+	SDL_Surface *s = SDL_CreateRGBSurface(0, 64*pixelsize, 32*pixelsize, 32, 0, 0, 0, 0);
 	if (s == NULL) {
 		return NULL;
 	}
@@ -42,10 +42,11 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	SDL_VideoInit(NULL);
 	SDL_DisplayMode dm;
 	if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
+		fprintf(stderr, "%s\n", SDL_GetError());
 		goto gui_exit_1;
 	}
 	int pxsz;
-	for (pxsz=1; (pxsz+1)*wo->w*8+64 < dm.w && (pxsz+1)*wo->h+64 < dm.h; ++pxsz);
+	for (pxsz=1; (pxsz+1)*wo->w*8+64 < dm.w && (pxsz+1)*wo->h+64 < dm.h && pxsz < 32; ++pxsz);
 	SDL_Window *win = SDL_CreateWindow(
 		"cellular_automaton",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -53,11 +54,13 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		0
 	);
 	if (win == NULL) { /*{{{*/
+		fprintf(stderr, "%s\n", SDL_GetError());
 		ret = 1;
 		goto gui_exit_1;
 	} /*}}}*/
 	SDL_Renderer *r = SDL_CreateRenderer(win, -1, 0);
 	if (r == NULL) { /*{{{*/
+		fprintf(stderr, "%s\n", SDL_GetError());
 		ret = 2;
 		goto gui_exit_2;
 	} /*}}}*/
@@ -68,6 +71,7 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 	} /*}}}*/
 	SDL_Texture *t = SDL_CreateTextureFromSurface(r, s);
 	if (t == NULL) { /*{{{*/
+		fprintf(stderr, "%s\n", SDL_GetError());
 		ret = 4;
 		goto gui_exit_4;
 	} /*}}}*/
@@ -173,7 +177,8 @@ int gui_main(world_t *wo, const ruleset_lut_t *rsl) { /*{{{*/
 		if ((run && timesup) || needsredraw) { /*{{{*/
 			for (int x=0; x<wo->w; ++x) {
 				for (int y=0; y<wo->h; ++y) {
-					SDL_Rect srcr = { .x=0, .y=world_data(wo, g, x, y)*pxsz, .w=8*pxsz, .h=pxsz };
+					int wd = world_data(wo, g, x, y);
+					SDL_Rect srcr = { .x=((wd&0xe0)>>2)*pxsz, .y=(wd&0x1f)*pxsz, .w=8*pxsz, .h=pxsz };
 					SDL_Rect dstr = { .x=x*8*pxsz, .y=y*pxsz, .w=8*pxsz, .h=1*pxsz };
 					SDL_RenderCopy(r, t, &srcr, &dstr);
 				}

@@ -1,4 +1,5 @@
 #include "ca.h"
+#include "bitmap.h"
 #include <stdlib.h>
 
 ruleset_t *build_ruleset(const char *s) { /*{{{*/
@@ -99,19 +100,16 @@ world_t *create_world(int w, int h) { /*{{{*/
 	}
 	wo->w = w;
 	wo->h = h;
-	wo->d = calloc(2*w*h, sizeof(uint8_t));
-	if (wo->d == NULL) {
-		perror("create_world()");
-		free(wo);
+	if (!init_bitmap(wo->g, w, h) || !init_bitmap(wo->g+1, w, h)) {
+		free_world(wo);
 		return NULL;
 	}
 	return wo;
 } /*}}}*/
 void free_world(world_t *wo) { /*{{{*/
 	if (wo != NULL) {
-		if (wo->d != NULL) {
-			free(wo->d);
-		}
+		if (wo->g[0].d != NULL) { destroy_bitmap(wo->g); }
+		if (wo->g[1].d != NULL) { destroy_bitmap(wo->g+1); }
 		free(wo);
 	}
 } /*}}}*/

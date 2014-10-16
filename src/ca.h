@@ -1,6 +1,7 @@
 #ifndef __CA_H__
 #define __CA_H__
 
+#include "bitmap.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -16,11 +17,11 @@ typedef struct {
 typedef struct {
 	int w;
 	int h;
-	uint8_t *d;
+	bitmap_t g[2];
 } world_t;
 
 #define lut_data(LUT_, I_, J_, K_) ((LUT_)->lut[((I_)<<16) + ((J_)<<8) + (K_)])
-#define world_data(WW_, GG_, XX_, YY_) ((WW_)->d[(GG_)*(WW_)->w*(WW_)->h + (YY_)*(WW_)->w + (XX_)])
+#define world_data(WW_, GG_, XX_, YY_) ((WW_)->g[GG_].d[(YY_)*(WW_)->w + (XX_)])
 
 ruleset_t *build_ruleset(const char *s);
 void free_ruleset(ruleset_t *rs);
